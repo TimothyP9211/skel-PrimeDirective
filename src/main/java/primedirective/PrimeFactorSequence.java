@@ -1,7 +1,9 @@
 package primedirective;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PrimeFactorSequence {
     private List<Integer> primes;
@@ -27,7 +29,22 @@ public class PrimeFactorSequence {
      */
     public List<Integer> primeFactorSequence() {
         List<Integer> seq = new ArrayList<>();
-        // TODO: Implement this method
+        List<Integer> primes = Primes.getPrimes(upperBound);
+        for (int i = 0; i <= upperBound; i++) {
+            int primeCount = 0;
+            int number = i;
+            for(Integer prime : primes) {
+                if (i == 0) {
+                    break;
+                } else {
+                    while (number % prime == 0) {
+                        number = number / prime;
+                        primeCount++;
+                    }
+                }
+            }
+            seq.add(primeCount);
+        }
         return seq;
     }
 
@@ -41,7 +58,12 @@ public class PrimeFactorSequence {
      */
     public List<Integer> numbersWithMPrimeFactors(int m) {
         List<Integer> seq = new ArrayList<>();
-        // TODO: Implement this method
+        List<Integer> PFS = primeFactorSequence();
+        for (int i = 0; i <= upperBound; i++) {
+            if (PFS.get(i) == m) {
+                seq.add(i);
+            }
+        }
         return seq;
     }
 
@@ -59,7 +81,12 @@ public class PrimeFactorSequence {
      */
     public List<IntPair> numbersWithMPrimeFactorsAndSmallGap(int m, int gap) {
         List<IntPair> listOfPairs = new ArrayList<>();
-        // TODO: Implement this method
+        List<Integer> MPFS = numbersWithMPrimeFactors(m);
+        for (int i = 0; i < MPFS.size() - 1; i++) {
+            if (MPFS.get(i + 1) - MPFS.get(i) <= gap) {
+                listOfPairs.add(new IntPair(MPFS.get(i), MPFS.get(i + 1)));
+            }
+        }
         return listOfPairs;
     }
 
@@ -76,8 +103,64 @@ public class PrimeFactorSequence {
      * @return a string representation of the smallest transformation sequence
      */
     public String changeToPrime(int n) {
-        // TODO: Implement this method
-        return "-";
+        Set<String> sequences = new HashSet<>();
+        List<Integer> primes = Primes.getPrimes(upperBound);
+        String s1 = makePrime(n, "", primes, 0, sequences);
+        String s2 = makePrime(n, "", primes, 1, sequences);
+        String shortest = "-";
+
+        int minLen = Integer.MAX_VALUE;
+        for (String s : sequences) {
+            if (s.length() < minLen) {
+                minLen = s.length();
+                shortest = s;
+            } else if (s.length() == minLen) {
+                int n1 = StringToBinary(shortest);
+                int n2 = StringToBinary(s);
+                if (n2 < n1) {
+                    shortest = s;
+                }
+            }
+        }
+
+        return shortest;
     }
+
+    private String makePrime(int n, String sequence, List<Integer> primes, int seqType, Set<String> sequences) {
+        if (n > upperBound) {
+            return "-";
+        }
+        if (primes.contains(n)) {
+           sequences.add(sequence);
+           return sequence;
+        }
+        if (seqType == 0) {
+            n = 2 * n + 1;
+            sequence = sequence.concat("0");
+        }
+        if (seqType == 1) {
+            n = n + 1;
+            sequence = sequence.concat("1");
+        }
+        makePrime(n, sequence, primes, 0, sequences);
+        makePrime(n , sequence, primes, 1, sequences);
+
+        return sequence;
+    }
+
+    private int StringToBinary(String s) {
+        char[] chars = s.toCharArray();
+        int power = s.length() - 1;
+        int sum = 0;
+        for (char c : chars) {
+            if (c == '1') {
+                sum += (int) Math.pow(2, power);
+            }
+            power--;
+        }
+        return sum;
+    }
+
+
 
 }
